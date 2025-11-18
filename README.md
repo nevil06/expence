@@ -60,7 +60,7 @@ expense-manager/
 
 - Node.js (v16 or higher)
 - npm or yarn
-- Expo CLI (for mobile development)
+- Expo Go app installed on your mobile device
 - Firebase project with Firestore enabled
 
 ### Backend Setup
@@ -112,7 +112,9 @@ npm install
 EXPO_PUBLIC_API_URL=http://localhost:8080/api
 ```
 
-4. Start the Expo development server:
+4. Create the required assets (icon, splash screen, etc.) as described in the assets section below
+
+5. Start the Expo development server:
 ```bash
 npx expo start
 ```
@@ -146,6 +148,63 @@ The backend API provides the following endpoints:
 ## Environment Variables
 
 Both the backend and frontend require environment variables to function properly. See the setup instructions above for details.
+
+## Running on Mobile
+
+### Prerequisites
+- Install the Expo Go app from your device's app store (available on both Google Play and Apple App Store)
+- Ensure your mobile device is on the same Wi-Fi network as your development machine
+- Node.js and npm installed on your development machine
+
+### Steps
+1. Make sure your backend server is running (port 8080):
+```bash
+cd backend
+npm run dev
+```
+
+2. In a new terminal, navigate to the frontend directory and install dependencies:
+```bash
+cd frontend
+npm install
+```
+
+3. Create the required assets in the `frontend/assets` directory (see Asset Configuration section below)
+
+4. Run the Expo development server:
+```bash
+npx expo start
+```
+
+5. The Expo development tool will start in your browser
+
+6. Scan the QR code shown in the browser using your mobile device's camera or the Expo Go app
+
+7. The app will load on your mobile device
+
+### Alternative Method
+- If using the Expo CLI, you can run:
+```bash
+npx expo start --tunnel
+```
+- This creates a tunnel that allows you to connect to the development server from anywhere, not just the same network
+
+### Asset Configuration
+To properly display your app on mobile devices, you need to create the following assets in the `frontend/assets` directory:
+- `icon.png` - App icon (1024x1024 recommended)
+- `splash.png` - Splash screen image
+- `adaptive-icon.png` - Android adaptive icon
+
+See the `frontend/assets/README.md` file for detailed information about asset requirements.
+
+### Firebase Configuration (for push notifications and Firestore)
+The app has Firebase dependencies for push notifications and additional Firestore operations, but the configuration is not fully implemented. For now, the app uses the REST API for all data operations. To fully implement Firebase features:
+
+1. Create a Firebase project at https://console.firebase.google.com/
+2. Add your Android and iOS apps to the project
+3. Download and add the `google-services.json` file to `frontend/android/app/`
+4. Add the `GoogleService-Info.plist` file to the iOS project (if building for iOS)
+5. Configure the Firebase credentials in your environment variables
 
 ## Development
 
