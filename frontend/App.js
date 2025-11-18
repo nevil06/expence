@@ -21,7 +21,7 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Check if user is authenticated
-const isAuthenticated = async () => {
+const checkAuthenticationStatus = async () => {
   try {
     const token = await AsyncStorage.getItem('userToken');
     return token !== null;
@@ -58,7 +58,7 @@ const App = () => {
   }, []);
 
   const checkAuthStatus = async () => {
-    const authStatus = await isAuthenticated();
+    const authStatus = await checkAuthenticationStatus();
     setIsAuthenticated(authStatus);
     setIsLoading(false);
   };

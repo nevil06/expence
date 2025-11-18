@@ -122,7 +122,8 @@ export const createExpense = async (req: Request, res: Response) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { userId, categoryId, amount, description, date }: ExpenseInput = value;
+    const userId = (req as any).userId;
+    const { categoryId, amount, description, date }: ExpenseInput = value;
 
     // Verify user and category belong to the same user
     const userDoc = await getFirestore().collection('users').doc(userId).get();
@@ -152,7 +153,6 @@ export const createExpense = async (req: Request, res: Response) => {
     res.status(201).json({
       id: docRef.id,
       ...newExpense,
-      id: docRef.id,
     });
   } catch (error) {
     console.error('Create expense error:', error);

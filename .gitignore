@@ -1,0 +1,27 @@
+node_modules/
+package-lock.json
+yarn.lock
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# OS generated files
+ehthumbs.db
+Thumbs.db
+
+# Backend
+backend/dist/
+backend/node_modules/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.expo/
+frontend/tsconfig.json
+frontend/package-lock.json
