@@ -1,0 +1,118 @@
+{
+  "users": [
+    {
+      "id": "user1",
+      "email": "user@example.com",
+      "name": "John Doe",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat1",
+      "userId": "user1",
+      "name": "Food & Dining",
+      "icon": "restaurant",
+      "color": "#FF6B6B",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat2",
+      "userId": "user1",
+      "name": "Transportation",
+      "icon": "directions-car",
+      "color": "#4ECDC4",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat3",
+      "userId": "user1",
+      "name": "Shopping",
+      "icon": "shopping-cart",
+      "color": "#45B7D1",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat4",
+      "userId": "user1",
+      "name": "Entertainment",
+      "icon": "local-movies",
+      "color": "#FFBE0B",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat5",
+      "userId": "user1",
+      "name": "Healthcare",
+      "icon": "local-hospital",
+      "color": "#FB5607",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat6",
+      "userId": "user1",
+      "name": "Utilities",
+      "icon": "home",
+      "color": "#8338EC",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "exp1",
+      "userId": "user1",
+      "categoryId": "cat1",
+      "amount": 24.50,
+      "description": "Dinner at restaurant",
+      "date": "2023-06-15T00:00:00.000Z",
+      "createdAt": "2023-06-15T12:00:00.000Z"
+    },
+    {
+      "id": "exp2",
+      "userId": "user1",
+      "categoryId": "cat2",
+      "amount": 45.00,
+      "description": "Gas for car",
+      "date": "2023-06-14T00:00:00.000Z",
+      "createdAt": "2023-06-14T09:30:00.000Z"
+    },
+    {
+      "id": "exp3",
+      "userId": "user1",
+      "categoryId": "cat3",
+      "amount": 89.99,
+      "description": "New headphones",
+      "date": "2023-06-10T00:00:00.000Z",
+      "createdAt": "2023-06-10T15:45:00.000Z"
+    },
+    {
+      "id": "exp4",
+      "userId": "user1",
+      "categoryId": "cat4",
+      "amount": 15.99,
+      "description": "Movie tickets",
+      "date": "2023-06-05T00:00:00.000Z",
+      "createdAt": "2023-06-05T18:20:00.000Z"
+    },
+    {
+      "id": "exp5",
+      "userId": "user1",
+      "categoryId": "cat5",
+      "amount": 120.00,
+      "description": "Doctor visit copay",
+      "date": "2023-06-01T00:00:00.000Z",
+      "createdAt": "2023-06-01T10:15:00.000Z"
+    }
+  ],
+  "settings": [
+    {
+      "id": "settings1",
+      "userId": "user1",
+      "currency": "USD",
+      "theme": "light",
+      "notificationsEnabled": true,
+      "language": "en",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    }
+  ]
+}

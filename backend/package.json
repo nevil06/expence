@@ -1,0 +1,51 @@
+{
+  "name": "expense-manager-backend",
+  "version": "1.0.0",
+  "description": "Backend API for expense manager application",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "test": "jest --passWithNoTests",
+    "lint": "eslint src/**/*.ts",
+    "prettier": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "expense",
+    "manager",
+    "api",
+    "express",
+    "typescript",
+    "firebase"
+  ],
+  "author": "Expense Manager Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "dotenv": "^16.3.1",
+    "joi": "^17.9.2",
+    "firebase-admin": "^11.10.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "express-rate-limit": "^6.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.5",
+    "@types/express": "^4.17.17",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.2",
+    "typescript": "^5.1.6",
+    "ts-node": "^10.9.1",
+    "nodemon": "^3.0.1",
+    "@types/jest": "^29.5.3",
+    "jest": "^29.6.1",
+    "supertest": "^6.3.3",
+    "eslint": "^8.45.0",
+    "prettier": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0"
+  }
+}
