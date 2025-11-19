@@ -22,5 +22,8 @@
     "expo"
   ],
   "author": "Expense Manager Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "concurrently": "^9.2.1"
+  }
 }
