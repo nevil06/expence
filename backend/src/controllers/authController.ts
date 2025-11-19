@@ -96,10 +96,10 @@ export const register = async (req: Request, res: Response) => {
       token,
     };
 
-    res.status(201).json(userResponse);
+    return res.status(201).json(userResponse);
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -149,9 +149,9 @@ export const login = async (req: Request, res: Response) => {
       token,
     };
 
-    res.json(userResponse);
+    return res.json(userResponse);
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

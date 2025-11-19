@@ -25,15 +25,15 @@ export const getCategories = async (req: Request, res: Response) => {
       categories.push({
         id: doc.id,
         ...data,
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
+        createdAt: data.createdAt instanceof Date ? data.createdAt : (data.createdAt as any).toDate(),
+        updatedAt: data.updatedAt instanceof Date ? data.updatedAt : (data.updatedAt as any).toDate(),
       } as Category);
     });
 
-    res.json(categories);
+    return res.json(categories);
   } catch (error) {
     console.error('Get categories error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -50,21 +50,24 @@ export const getCategory = async (req: Request, res: Response) => {
     }
 
     const categoryData = doc.data();
-    if (categoryData.userId !== userId) {
+    if (!categoryData || categoryData.userId !== userId) {
       return res.status(403).json({ error: 'Unauthorized access to category' });
     }
 
     const category = {
       id: doc.id,
-      ...categoryData,
-      createdAt: categoryData.createdAt.toDate(),
-      updatedAt: categoryData.updatedAt.toDate(),
+      userId: categoryData.userId,
+      name: categoryData.name,
+      icon: categoryData.icon,
+      color: categoryData.color,
+      createdAt: categoryData.createdAt instanceof Date ? categoryData.createdAt : (categoryData.createdAt as any).toDate(),
+      updatedAt: categoryData.updatedAt instanceof Date ? categoryData.updatedAt : (categoryData.updatedAt as any).toDate(),
     } as Category;
 
-    res.json(category);
+    return res.json(category);
   } catch (error) {
     console.error('Get category error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -97,13 +100,13 @@ export const createCategory = async (req: Request, res: Response) => {
 
     const docRef = await getFirestore().collection('categories').add(newCategory);
 
-    res.status(201).json({
+    return res.status(201).json({
       id: docRef.id,
       ...newCategory,
     });
   } catch (error) {
     console.error('Create category error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -126,7 +129,7 @@ export const updateCategory = async (req: Request, res: Response) => {
     }
 
     const categoryData = categoryDoc.data();
-    if (categoryData.userId !== userId) {
+    if (!categoryData || categoryData.userId !== userId) {
       return res.status(403).json({ error: 'Unauthorized access to category' });
     }
 
@@ -139,14 +142,17 @@ export const updateCategory = async (req: Request, res: Response) => {
 
     await getFirestore().collection('categories').doc(id).update(updateData);
 
-    res.json({
-      id,
+    return res.json({
+      id: categoryDoc.id,
       userId,
-      ...updateData,
+      name,
+      icon,
+      color,
+      updatedAt: updateData.updatedAt,
     });
   } catch (error) {
     console.error('Update category error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -163,7 +169,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     }
 
     const categoryData = categoryDoc.data();
-    if (categoryData.userId !== userId) {
+    if (!categoryData || categoryData.userId !== userId) {
       return res.status(403).json({ error: 'Unauthorized access to category' });
     }
 
@@ -180,9 +186,9 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
     await getFirestore().collection('categories').doc(id).delete();
 
-    res.status(204).send();
+    return res.status(204).send();
   } catch (error) {
     console.error('Delete category error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

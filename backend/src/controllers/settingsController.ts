@@ -21,18 +21,25 @@ export const getUserSettings = async (req: Request, res: Response) => {
 
     const settingsDoc = settingsSnapshot.docs[0];
     const settingsData = settingsDoc.data();
+    if (!settingsData) {
+      return res.status(404).json({ error: 'Settings not found' });
+    }
 
     const settings = {
       id: settingsDoc.id,
-      ...settingsData,
-      createdAt: settingsData.createdAt.toDate(),
-      updatedAt: settingsData.updatedAt.toDate(),
+      userId: settingsData.userId,
+      currency: settingsData.currency,
+      theme: settingsData.theme,
+      notificationsEnabled: settingsData.notificationsEnabled,
+      language: settingsData.language,
+      createdAt: settingsData.createdAt instanceof Date ? settingsData.createdAt : (settingsData.createdAt as any).toDate(),
+      updatedAt: settingsData.updatedAt instanceof Date ? settingsData.updatedAt : (settingsData.updatedAt as any).toDate(),
     } as UserSettings;
 
-    res.json(settings);
+    return res.json(settings);
   } catch (error) {
     console.error('Get settings error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -87,14 +94,30 @@ export const updateUserSettings = async (req: Request, res: Response) => {
 
     await getFirestore().collection('settings').doc(settingsDoc.id).update(updateData);
 
-    res.json({
+    // Get the updated document to return fresh data
+    const updatedSettingsDoc = await getFirestore().collection('settings').doc(settingsDoc.id).get();
+    if (!updatedSettingsDoc.exists) {
+      return res.status(404).json({ error: 'Settings not found' });
+    }
+    const updatedSettingsData = updatedSettingsDoc.data();
+    if (!updatedSettingsData) {
+      return res.status(404).json({ error: 'Settings not found' });
+    }
+
+    const response = {
       id: settingsDoc.id,
-      userId,
-      ...settingsDoc.data(),
-      ...updateData,
-    });
+      userId: updatedSettingsData.userId,
+      currency: updatedSettingsData.currency,
+      theme: updatedSettingsData.theme,
+      notificationsEnabled: updatedSettingsData.notificationsEnabled,
+      language: updatedSettingsData.language,
+      createdAt: updatedSettingsData.createdAt instanceof Date ? updatedSettingsData.createdAt : (updatedSettingsData.createdAt as any).toDate(),
+      updatedAt: updatedSettingsData.updatedAt instanceof Date ? updatedSettingsData.updatedAt : (updatedSettingsData.updatedAt as any).toDate(),
+    };
+
+    return res.json(response);
   } catch (error) {
     console.error('Update settings error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

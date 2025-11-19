@@ -43,9 +43,9 @@ export const getExpenses = async (req: Request, res: Response) => {
       expenses.push({
         id: doc.id,
         ...data,
-        date: data.date.toDate(),
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
+        date: data.date instanceof Date ? data.date : (data.date as any).toDate(),
+        createdAt: data.createdAt instanceof Date ? data.createdAt : (data.createdAt as any).toDate(),
+        updatedAt: data.updatedAt instanceof Date ? data.updatedAt : (data.updatedAt as any).toDate(),
       } as Expense);
     });
 
@@ -53,7 +53,7 @@ export const getExpenses = async (req: Request, res: Response) => {
     let countQuery = getFirestore()
       .collection('expenses')
       .where('userId', '==', userId);
-    
+
     if (startDate) {
       countQuery = countQuery.where('date', '>=', new Date(startDate));
     }
@@ -63,11 +63,11 @@ export const getExpenses = async (req: Request, res: Response) => {
     if (categoryId) {
       countQuery = countQuery.where('categoryId', '==', categoryId);
     }
-    
+
     const countSnapshot = await countQuery.get();
     const totalCount = countSnapshot.size;
 
-    res.json({
+    return res.json({
       expenses,
       pagination: {
         page,
@@ -78,7 +78,7 @@ export const getExpenses = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Get expenses error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -95,22 +95,25 @@ export const getExpense = async (req: Request, res: Response) => {
     }
 
     const expenseData = doc.data();
-    if (expenseData.userId !== userId) {
+    if (!expenseData || expenseData.userId !== userId) {
       return res.status(403).json({ error: 'Unauthorized access to expense' });
     }
 
     const expense = {
       id: doc.id,
-      ...expenseData,
-      date: expenseData.date.toDate(),
-      createdAt: expenseData.createdAt.toDate(),
-      updatedAt: expenseData.updatedAt.toDate(),
+      userId: expenseData.userId,
+      categoryId: expenseData.categoryId,
+      amount: expenseData.amount,
+      description: expenseData.description,
+      date: expenseData.date instanceof Date ? expenseData.date : (expenseData.date as any).toDate(),
+      createdAt: expenseData.createdAt instanceof Date ? expenseData.createdAt : (expenseData.createdAt as any).toDate(),
+      updatedAt: expenseData.updatedAt instanceof Date ? expenseData.updatedAt : (expenseData.updatedAt as any).toDate(),
     } as Expense;
 
-    res.json(expense);
+    return res.json(expense);
   } catch (error) {
     console.error('Get expense error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -150,13 +153,13 @@ export const createExpense = async (req: Request, res: Response) => {
 
     const docRef = await getFirestore().collection('expenses').add(newExpense);
 
-    res.status(201).json({
+    return res.status(201).json({
       id: docRef.id,
       ...newExpense,
     });
   } catch (error) {
     console.error('Create expense error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -179,7 +182,7 @@ export const updateExpense = async (req: Request, res: Response) => {
     }
 
     const expenseData = expenseDoc.data();
-    if (expenseData.userId !== userId) {
+    if (!expenseData || expenseData.userId !== userId) {
       return res.status(403).json({ error: 'Unauthorized access to expense' });
     }
 
@@ -200,14 +203,19 @@ export const updateExpense = async (req: Request, res: Response) => {
 
     await getFirestore().collection('expenses').doc(id).update(updateData);
 
-    res.json({
-      id,
+    return res.json({
+      id: expenseDoc.id,
       userId,
-      ...updateData,
+      categoryId,
+      amount,
+      description,
+      date: updateData.date,
+      updatedAt: updateData.updatedAt,
+      isSynced: updateData.isSynced,
     });
   } catch (error) {
     console.error('Update expense error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -224,15 +232,15 @@ export const deleteExpense = async (req: Request, res: Response) => {
     }
 
     const expenseData = expenseDoc.data();
-    if (expenseData.userId !== userId) {
+    if (!expenseData || expenseData.userId !== userId) {
       return res.status(403).json({ error: 'Unauthorized access to expense' });
     }
 
     await getFirestore().collection('expenses').doc(id).delete();
 
-    res.status(204).send();
+    return res.status(204).send();
   } catch (error) {
     console.error('Delete expense error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -20,6 +20,8 @@
     "noImplicitThis": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "exactOptionalPropertyTypes": false,
     "moduleResolution": "node",
     "baseUrl": "./",
     "paths": {
@@ -32,6 +34,7 @@
   "exclude": [
     "node_modules",
     "dist",
+    "__tests__",
     "tests"
   ]
 }
