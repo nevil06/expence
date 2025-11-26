@@ -1,10 +1,10 @@
 import request from 'supertest';
-import { app } from '../src/index';
-import { getFirestore } from '../src/utils/firebase';
+import { app } from '../index';
+import { getFirestore } from '../utils/firebase';
 
 describe('Expense Manager API', () => {
   // Mock Firebase to avoid actual calls during testing
-  jest.mock('../src/utils/firebase', () => ({
+  jest.mock('../utils/firebase', () => ({
     getFirestore: jest.fn(() => ({
       collection: jest.fn(() => ({
         doc: jest.fn(() => ({

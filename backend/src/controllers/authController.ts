@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { getFirestore } from '../utils/firebase';
 import { User, UserInput } from '../models/User';
 import { userValidationSchema, loginValidationSchema } from '../utils/validation';
+import { v4 as uuidv4 } from 'uuid';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -99,6 +100,89 @@ export const register = async (req: Request, res: Response) => {
     return res.status(201).json(userResponse);
   } catch (error) {
     console.error('Registration error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updatePassword = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+
+    // Find the password reset token
+    const resetTokenSnapshot = await getFirestore()
+      .collection('passwordResets')
+      .where('token', '==', token)
+      .limit(1)
+      .get();
+
+    if (resetTokenSnapshot.empty) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    const resetTokenDoc = resetTokenSnapshot.docs[0];
+    const resetToken = resetTokenDoc.data();
+
+    // Check if the token has expired
+    if (new Date() > resetToken.expires.toDate()) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    // Hash the new password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Update the user's password
+    await getFirestore().collection('users').doc(resetToken.userId).update({
+      password: hashedPassword,
+    });
+
+    // Delete the password reset token
+    await resetTokenDoc.ref.delete();
+
+    return res.json({ message: 'Password updated successfully!' });
+  } catch (error) {
+    console.error('Password update error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    // Find user
+    const userSnapshot = await getFirestore()
+      .collection('users')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    if (userSnapshot.empty) {
+      // Return a success message even if the user doesn't exist to prevent email enumeration
+      return res.json({ message: 'Password reset link sent successfully!' });
+    }
+
+    const userDoc = userSnapshot.docs[0];
+    const userId = userDoc.id;
+
+    // Generate a password reset token
+    const token = uuidv4();
+    const expires = new Date(Date.now() + 3600000); // 1 hour from now
+
+    // Store the token in a new 'passwordResets' collection
+    await getFirestore().collection('passwordResets').add({
+      userId,
+      token,
+      expires,
+    });
+
+    // In a real application, you would send an email to the user with the reset link
+    const resetLink = `http://localhost:8081/update-password?token=${token}`;
+    console.log(`Password reset link for ${email}: ${resetLink}`);
+
+    return res.json({ message: 'Password reset link sent successfully!' });
+  } catch (error) {
+    console.error('Password reset error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

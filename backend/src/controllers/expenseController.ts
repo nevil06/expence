@@ -153,10 +153,9 @@ export const createExpense = async (req: Request, res: Response) => {
 
     const docRef = await getFirestore().collection('expenses').add(newExpense);
 
-    return res.status(201).json({
-      id: docRef.id,
-      ...newExpense,
-    });
+    const createdExpense = { ...newExpense, id: docRef.id };
+
+    return res.status(201).json(createdExpense);
   } catch (error) {
     console.error('Create expense error:', error);
     return res.status(500).json({ error: 'Internal server error' });

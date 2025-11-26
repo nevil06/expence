@@ -10,6 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import SignupScreen from './src/screens/SignupScreen';
+import PasswordResetScreen from './src/screens/PasswordResetScreen';
+import UpdatePasswordScreen from './src/screens/UpdatePasswordScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import AddExpenseScreen from './src/screens/AddExpenseScreen';
 import EditExpenseScreen from './src/screens/EditExpenseScreen';
@@ -36,6 +38,8 @@ const AuthStack = () => (
     <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
     <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
     <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="PasswordReset" component={PasswordResetScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="UpdatePassword" component={UpdatePasswordScreen} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 

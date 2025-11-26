@@ -14,7 +14,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 // Mock API service
-jest.mock('../services/api', () => ({
+jest.mock('../src/services/api', () => ({
   login: jest.fn(),
 }));
 
