@@ -100,10 +100,9 @@ export const createCategory = async (req: Request, res: Response) => {
 
     const docRef = await getFirestore().collection('categories').add(newCategory);
 
-    return res.status(201).json({
-      id: docRef.id,
-      ...newCategory,
-    });
+    const createdCategory = { ...newCategory, id: docRef.id };
+
+    return res.status(201).json(createdCategory);
   } catch (error) {
     console.error('Create category error:', error);
     return res.status(500).json({ error: 'Internal server error' });

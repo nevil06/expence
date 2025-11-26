@@ -76,10 +76,9 @@ export const updateUserSettings = async (req: Request, res: Response) => {
 
       const docRef = await getFirestore().collection('settings').add(newSettings);
 
-      return res.json({
-        id: docRef.id,
-        ...newSettings,
-      });
+      const createdSettings = { ...newSettings, id: docRef.id };
+
+      return res.json(createdSettings);
     }
 
     const settingsDoc = settingsSnapshot.docs[0];

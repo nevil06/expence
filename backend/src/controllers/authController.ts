@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { getFirestore } from '../utils/firebase';
 import { User, UserInput } from '../models/User';
 import { userValidationSchema, loginValidationSchema } from '../utils/validation';
-import { v4 as uuidv4 } from 'uuid';
+import { DeviceUUID } from 'device-uuid';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -166,7 +166,8 @@ export const resetPassword = async (req: Request, res: Response) => {
     const userId = userDoc.id;
 
     // Generate a password reset token
-    const token = uuidv4();
+    const du = new DeviceUUID();
+    const token = du.get();
     const expires = new Date(Date.now() + 3600000); // 1 hour from now
 
     // Store the token in a new 'passwordResets' collection
