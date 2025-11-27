@@ -1,0 +1,44 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Backend",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "cwd": "${workspaceFolder}/backend",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register"
+            ],
+            "args": [
+                "src/index.ts"
+            ],
+            "envFile": "${workspaceFolder}/backend/.env",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Start Frontend",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/frontend",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "expo",
+                "start"
+            ],
+            "console": "integratedTerminal"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full Stack",
+            "configurations": [
+                "Debug Backend",
+                "Start Frontend"
+            ]
+        }
+    ]
+}

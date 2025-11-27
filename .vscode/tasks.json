@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "install dependencies",
+            "type": "shell",
+            "command": "npm install && cd backend && npm install && cd ../frontend && npm install",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "run backend",
+            "type": "npm",
+            "script": "dev",
+            "path": "backend",
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "run frontend",
+            "type": "npm",
+            "script": "start",
+            "path": "frontend",
+            "problemMatcher": [],
+            "group": "test"
+        }
+    ]
+}
