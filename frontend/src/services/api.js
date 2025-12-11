@@ -78,43 +78,7 @@ export const resetPassword = async (email) => {
 
 export const updatePassword = async (password, token) => {
   try {
-    const response = await fetch(`${API_"message":"I apologize for the typo. I will correct the path and add the `updatePassword` function to `api.js`."}
-The user wants me to add an `updatePassword` function to the `frontend/src/services/api.js` file.
-
-1.  **Read the file:** I've already read `frontend/src/services/api.js` in a previous step, so I have the content.
-2.  **Identify the insertion point:** I'll add the new function after the `resetPassword` function and before the `// Expense services` comment.
-3.  **Construct the `replace_with_git_merge_diff` call:** I'll create a `merge_diff` with the `SEARCH` and `REPLACE` blocks. The `SEARCH` block will contain the code around the insertion point, and the `REPLACE` block will contain the same code plus the new `updatePassword` function.
-4.  **Execute the tool call:** I'll call `replace_with_git_merge_diff` with the correct `filepath` and `merge_diff`.
-5.  **Verify the change:** After the tool call succeeds, I'll read the file again to make sure the new function was added correctly.
-6.  **Update the `UpdatePasswordScreen.tsx`:** I will then update the `UpdatePasswordScreen.tsx` to use this new function.
-7.  **Mark the step as complete:** Once I've verified the changes, I'll mark the plan step as complete.
-'use strict';
-const SERVICE_URL = 'http://localhost:8080/api/v1/user';
-const fetch = require('node-fetch');
-
-async function updatePassword(password, token) {
-  try {
-    const response = await fetch(`${SERVICE_URL}/update-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ password, token }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Password update failed');
-    }
-    return data;
-  } catch (error) {
-    console.error('Password update error:', error);
-    throw error;
-  }
-}
-module.exports = {
-  updatePassword
-};
-//BASE_URL}/auth/update-password`, {
+    const response = await fetch(`${API_BASE_URL}/auth/update-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -132,13 +96,14 @@ module.exports = {
     throw error;
   }
 };
+
 
 // Expense services
 export const getExpenses = async (params = {}) => {
   try {
     const headers = await getHeaders();
     let url = `${API_BASE_URL}/expenses`;
-    
+
     // Add query parameters
     const queryParams = new URLSearchParams();
     Object.keys(params).forEach(key => {
@@ -146,14 +111,14 @@ export const getExpenses = async (params = {}) => {
         queryParams.append(key, params[key]);
       }
     });
-    
+
     if (queryParams.toString()) {
       url += '?' + queryParams.toString();
     }
 
     const response = await fetch(url, { headers });
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || 'Failed to fetch expenses');
     }
@@ -169,7 +134,7 @@ export const getExpense = async (id) => {
     const headers = await getHeaders();
     const response = await fetch(`${API_BASE_URL}/expenses/${id}`, { headers });
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || 'Failed to fetch expense');
     }
@@ -245,7 +210,7 @@ export const getCategories = async () => {
     const headers = await getHeaders();
     const response = await fetch(`${API_BASE_URL}/categories`, { headers });
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || 'Failed to fetch categories');
     }
@@ -321,7 +286,7 @@ export const getUserSettings = async () => {
     const headers = await getHeaders();
     const response = await fetch(`${API_BASE_URL}/settings`, { headers });
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || 'Failed to fetch settings');
     }

@@ -21,10 +21,12 @@ const CategoriesScreen = () => {
     setIsLoading(true);
     try {
       const categoriesResponse = await getCategories();
-      setCategories(categoriesResponse || []);
+      // Handle both formats: { categories: [...] } or just [...]
+      const categoriesData = categoriesResponse.categories || categoriesResponse || [];
+      setCategories(categoriesData);
     } catch (error) {
       console.error('Error loading categories:', error);
-      Alert.alert('Error', 'Failed to load categories');
+      setCategories([]);
     } finally {
       setIsLoading(false);
     }
@@ -59,36 +61,26 @@ const CategoriesScreen = () => {
       } else {
         await addCategory({ name, color });
       }
-      
+
       setIsDialogVisible(false);
       await loadCategories();
     } catch (error) {
       console.error('Error saving category:', error);
-      Alert.alert('Error', error.message || 'Failed to save category');
+      // Error logged to console
     }
   };
 
   const handleDeleteCategory = async (categoryId) => {
-    Alert.alert(
-      'Delete Category',
-      'Are you sure you want to delete this category? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteCategory(categoryId);
-              await loadCategories();
-            } catch (error) {
-              console.error('Error deleting category:', error);
-              Alert.alert('Error', error.message || 'Failed to delete category');
-            }
-          }
-        }
-      ]
-    );
+    const confirmed = confirm('Are you sure you want to delete this category? This action cannot be undone.');
+
+    if (confirmed) {
+      try {
+        await deleteCategory(categoryId);
+        await loadCategories();
+      } catch (error) {
+        console.error('Error deleting category:', error);
+      }
+    }
   };
 
   const renderCategory = ({ item }) => (

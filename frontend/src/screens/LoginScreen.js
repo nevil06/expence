@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login } from '../services/api';
@@ -9,10 +9,21 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const showAlert = (title, message) => {
+    if (Platform.OS === 'web') {
+      setError(message);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
 
   const handleLogin = async () => {
+    setError('');
+
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showAlert('Error', 'Please fill in all fields');
       return;
     }
 
@@ -21,12 +32,17 @@ const LoginScreen = () => {
       const response = await login(email, password);
       if (response.token) {
         await AsyncStorage.setItem('userToken', response.token);
-        navigation.navigate('Dashboard');
+        // Force a full app reload to update auth state
+        if (Platform.OS === 'web') {
+          window.location.reload();
+        } else {
+          navigation.navigate('Dashboard');
+        }
       } else {
-        Alert.alert('Error', response.error || 'Login failed');
+        showAlert('Error', response.error || 'Login failed');
       }
     } catch (error) {
-      Alert.alert('Error', error.message || 'Login failed');
+      showAlert('Error', error.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -35,37 +51,55 @@ const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      
+
+      {error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : null}
+
       <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => {
+          setEmail(text);
+          setError('');
+        }}
         keyboardType="email-address"
         autoCapitalize="none"
+        editable={!loading}
       />
-      
+
       <TextInput
         style={styles.input}
         placeholder="Password"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          setError('');
+        }}
         secureTextEntry
+        editable={!loading}
       />
-      
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleLogin}
+        disabled={loading}
+      >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={styles.buttonText}>Login</Text>
         )}
       </TouchableOpacity>
-      
-      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Signup')} disabled={loading}>
         <Text style={styles.link}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('PasswordReset')}>
+      <TouchableOpacity onPress={() => navigation.navigate('PasswordReset')} disabled={loading}>
         <Text style={styles.link}>Forgot Password?</Text>
       </TouchableOpacity>
     </View>
@@ -78,6 +112,9 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     backgroundColor: '#f5f5f5',
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 28,
@@ -85,6 +122,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
     color: '#333',
+  },
+  errorContainer: {
+    backgroundColor: '#fee',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#fcc',
+  },
+  errorText: {
+    color: '#c33',
+    fontSize: 14,
+    textAlign: 'center',
   },
   input: {
     height: 50,
@@ -94,6 +144,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: '#ddd',
+    fontSize: 16,
+    outlineStyle: 'none',
   },
   button: {
     backgroundColor: '#007AFF',
@@ -102,6 +154,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
     marginBottom: 15,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#fff',
@@ -112,6 +167,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#007AFF',
     fontSize: 16,
+    marginTop: 10,
   },
 });
 

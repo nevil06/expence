@@ -22,24 +22,32 @@ const DashboardScreen = () => {
       const now = new Date();
       const thirtyDaysAgo = new Date(now);
       thirtyDaysAgo.setDate(now.getDate() - 30);
-      
+
       const expensesResponse = await getExpenses({
         startDate: thirtyDaysAgo.toISOString(),
         endDate: now.toISOString(),
         limit: 10
       });
-      
-      setExpenses(expensesResponse.expenses || []);
-      
-      // Calculate total spent
-      const total = (expensesResponse.expenses || []).reduce((sum, expense) => sum + expense.amount, 0);
+
+      // Handle both formats: { expenses: [...] } or just [...]
+      const expensesData = expensesResponse.expenses || expensesResponse || [];
+      setExpenses(expensesData);
+
+      // Calculate total spent with safety check
+      const total = expensesData.reduce((sum, expense) => sum + (expense.amount || 0), 0);
       setTotalSpent(total);
-      
+
       // Fetch categories
       const categoriesResponse = await getCategories();
-      setCategories(categoriesResponse || []);
+      // Handle both formats: { categories: [...] } or just [...]
+      const categoriesData = categoriesResponse.categories || categoriesResponse || [];
+      setCategories(categoriesData);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Set empty arrays on error to prevent crashes
+      setExpenses([]);
+      setCategories([]);
+      setTotalSpent(0);
     } finally {
       setIsLoading(false);
     }
@@ -60,8 +68,16 @@ const DashboardScreen = () => {
     return `\$${amount.toFixed(2)}`;
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading Dashboard...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.container}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -130,6 +146,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
   },
   header: {
     padding: 20,

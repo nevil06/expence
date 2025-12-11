@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
-import { Card, Title, Paragraph, Button, TextInput, Switch, HelperText } from 'react-native-paper';
+import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import { Card, Title, Paragraph, Button, Switch } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserSettings, updateUserSettings } from '../services/api';
@@ -15,48 +15,84 @@ const SettingsScreen = () => {
   const [originalSettings, setOriginalSettings] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
   useEffect(() => {
     loadSettings();
   }, []);
+
+  // Apply theme when it changes
+  useEffect(() => {
+    if (Platform.OS === 'web' && settings.theme) {
+      applyTheme(settings.theme);
+    }
+  }, [settings.theme]);
+
+  const applyTheme = (theme) => {
+    if (typeof document !== 'undefined') {
+      if (theme === 'dark') {
+        document.body.style.backgroundColor = '#1a1a1a';
+        document.body.style.color = '#ffffff';
+      } else {
+        document.body.style.backgroundColor = '#f5f5f5';
+        document.body.style.color = '#000000';
+      }
+    }
+  };
 
   const loadSettings = async () => {
     setIsLoading(true);
     try {
       const settingsResponse = await getUserSettings();
       if (settingsResponse) {
-        setSettings(settingsResponse);
-        setOriginalSettings({ ...settingsResponse });
+        const loadedSettings = {
+          currency: settingsResponse.currency || 'USD',
+          theme: settingsResponse.theme || 'light',
+          notificationsEnabled: settingsResponse.notifications !== undefined ? settingsResponse.notifications : true,
+          language: settingsResponse.language || 'en',
+        };
+        setSettings(loadedSettings);
+        setOriginalSettings({ ...loadedSettings });
+        applyTheme(loadedSettings.theme);
       }
     } catch (error) {
       console.error('Error loading settings:', error);
       // Use default settings if API fails
-      setSettings({
+      const defaultSettings = {
         currency: 'USD',
         theme: 'light',
         notificationsEnabled: true,
         language: 'en',
-      });
-      setOriginalSettings({
-        currency: 'USD',
-        theme: 'light',
-        notificationsEnabled: true,
-        language: 'en',
-      });
+      };
+      setSettings(defaultSettings);
+      setOriginalSettings(defaultSettings);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const showMessage = (text, type) => {
+    setMessage(text);
+    setMessageType(type);
+    setTimeout(() => {
+      setMessage('');
+      setMessageType('');
+    }, 3000);
   };
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
       await updateUserSettings(settings);
-      Alert.alert('Success', 'Settings updated successfully!');
+      showMessage('Settings updated successfully!', 'success');
       setOriginalSettings({ ...settings });
+
+      // Save theme preference to AsyncStorage
+      await AsyncStorage.setItem('theme', settings.theme);
     } catch (error) {
       console.error('Error saving settings:', error);
-      Alert.alert('Error', error.message || 'Failed to save settings');
+      showMessage(error.message || 'Failed to save settings', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -64,16 +100,26 @@ const SettingsScreen = () => {
 
   const handleResetSettings = () => {
     setSettings({ ...originalSettings });
+    showMessage('Settings reset to original values', 'success');
   };
 
   const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('userToken');
-      // In a real app, you might need to navigate to the login screen
-      Alert.alert('Success', 'Logged out successfully!');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      Alert.alert('Error', 'Failed to log out');
+    const confirmed = confirm('Are you sure you want to logout?');
+    if (confirmed) {
+      try {
+        await AsyncStorage.removeItem('userToken');
+        showMessage('Logged out successfully!', 'success');
+
+        // Reload page to go back to login
+        setTimeout(() => {
+          if (Platform.OS === 'web') {
+            window.location.reload();
+          }
+        }, 1000);
+      } catch (error) {
+        console.error('Error logging out:', error);
+        showMessage('Failed to log out', 'error');
+      }
     }
   };
 
@@ -84,6 +130,7 @@ const SettingsScreen = () => {
     { value: 'JPY', label: 'Japanese Yen (JPY)' },
     { value: 'CAD', label: 'Canadian Dollar (CAD)' },
     { value: 'AUD', label: 'Australian Dollar (AUD)' },
+    { value: 'INR', label: 'Indian Rupee (INR)' },
   ];
 
   const languages = [
@@ -92,23 +139,41 @@ const SettingsScreen = () => {
     { value: 'fr', label: 'French' },
     { value: 'de', label: 'German' },
     { value: 'it', label: 'Italian' },
+    { value: 'hi', label: 'Hindi' },
   ];
 
+  const isDark = settings.theme === 'dark';
+  const dynamicStyles = getDynamicStyles(isDark);
+
+  if (isLoading) {
+    return (
+      <View style={[styles.loadingContainer, dynamicStyles.container]}>
+        <Text style={dynamicStyles.text}>Loading settings...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Title style={styles.title}>Settings</Title>
+    <ScrollView style={[styles.container, dynamicStyles.container]}>
+      <View style={[styles.header, dynamicStyles.header]}>
+        <Title style={dynamicStyles.title}>Settings</Title>
       </View>
 
-      <Card style={styles.settingsCard}>
+      {message ? (
+        <View style={[styles.messageContainer, messageType === 'success' ? styles.successContainer : styles.errorContainer]}>
+          <Text style={messageType === 'success' ? styles.successText : styles.errorText}>{message}</Text>
+        </View>
+      ) : null}
+
+      <Card style={[styles.settingsCard, dynamicStyles.card]}>
         <Card.Content>
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Currency</Text>
-            <View style={styles.pickerContainer}>
+            <Text style={[styles.settingLabel, dynamicStyles.text]}>Currency</Text>
+            <View style={[styles.pickerContainer, dynamicStyles.pickerContainer]}>
               <Picker
                 selectedValue={settings.currency}
                 onValueChange={(value) => setSettings(prev => ({ ...prev, currency: value }))}
-                style={styles.picker}
+                style={[styles.picker, dynamicStyles.picker]}
               >
                 {currencies.map((currency) => (
                   <Picker.Item key={currency.value} label={currency.label} value={currency.value} />
@@ -118,12 +183,12 @@ const SettingsScreen = () => {
           </View>
 
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Theme</Text>
-            <View style={styles.pickerContainer}>
+            <Text style={[styles.settingLabel, dynamicStyles.text]}>Theme</Text>
+            <View style={[styles.pickerContainer, dynamicStyles.pickerContainer]}>
               <Picker
                 selectedValue={settings.theme}
                 onValueChange={(value) => setSettings(prev => ({ ...prev, theme: value }))}
-                style={styles.picker}
+                style={[styles.picker, dynamicStyles.picker]}
               >
                 <Picker.Item label="Light" value="light" />
                 <Picker.Item label="Dark" value="dark" />
@@ -132,12 +197,12 @@ const SettingsScreen = () => {
           </View>
 
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Language</Text>
-            <View style={styles.pickerContainer}>
+            <Text style={[styles.settingLabel, dynamicStyles.text]}>Language</Text>
+            <View style={[styles.pickerContainer, dynamicStyles.pickerContainer]}>
               <Picker
                 selectedValue={settings.language}
                 onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}
-                style={styles.picker}
+                style={[styles.picker, dynamicStyles.picker]}
               >
                 {languages.map((language) => (
                   <Picker.Item key={language.value} label={language.label} value={language.value} />
@@ -147,7 +212,7 @@ const SettingsScreen = () => {
           </View>
 
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Notifications</Text>
+            <Text style={[styles.settingLabel, dynamicStyles.text]}>Notifications</Text>
             <Switch
               value={settings.notificationsEnabled}
               onValueChange={(value) => setSettings(prev => ({ ...prev, notificationsEnabled: value }))}
@@ -157,28 +222,29 @@ const SettingsScreen = () => {
       </Card>
 
       <View style={styles.buttonContainer}>
-        <Button 
-          mode="contained" 
-          style={styles.saveButton} 
+        <Button
+          mode="contained"
+          style={styles.saveButton}
           onPress={handleSaveSettings}
           disabled={isSaving}
         >
           {isSaving ? 'Saving...' : 'Save Settings'}
         </Button>
-        
-        <Button 
-          mode="outlined" 
-          style={styles.resetButton} 
+
+        <Button
+          mode="outlined"
+          style={styles.resetButton}
           onPress={handleResetSettings}
+          textColor={isDark ? '#fff' : '#007AFF'}
         >
-          Reset to Original
+          Reset
         </Button>
       </View>
 
       <View style={styles.logoutContainer}>
-        <Button 
-          mode="contained" 
-          style={styles.logoutButton} 
+        <Button
+          mode="contained"
+          style={styles.logoutButton}
           onPress={handleLogout}
           buttonColor="#FF3B30"
         >
@@ -186,14 +252,15 @@ const SettingsScreen = () => {
         </Button>
       </View>
 
-      <View style={styles.exportContainer}>
-        <Title style={styles.exportTitle}>Data Export</Title>
-        <Paragraph style={styles.exportDescription}>
+      <View style={[styles.exportContainer, dynamicStyles.card]}>
+        <Title style={[styles.exportTitle, dynamicStyles.text]}>Data Export</Title>
+        <Paragraph style={[styles.exportDescription, dynamicStyles.secondaryText]}>
           Export your expense data as a CSV file for backup or analysis.
         </Paragraph>
-        <Button 
-          mode="outlined" 
+        <Button
+          mode="outlined"
           style={styles.exportButton}
+          textColor={isDark ? '#fff' : '#007AFF'}
         >
           Export as CSV
         </Button>
@@ -202,18 +269,75 @@ const SettingsScreen = () => {
   );
 };
 
+const getDynamicStyles = (isDark) => ({
+  container: {
+    backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+  },
+  header: {
+    backgroundColor: isDark ? '#2a2a2a' : '#fff',
+  },
+  card: {
+    backgroundColor: isDark ? '#2a2a2a' : '#fff',
+  },
+  text: {
+    color: isDark ? '#fff' : '#000',
+  },
+  secondaryText: {
+    color: isDark ? '#aaa' : '#666',
+  },
+  title: {
+    color: isDark ? '#fff' : '#000',
+  },
+  pickerContainer: {
+    borderColor: isDark ? '#444' : '#ddd',
+    backgroundColor: isDark ? '#333' : '#fff',
+  },
+  picker: {
+    color: isDark ? '#fff' : '#000',
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     padding: 20,
-    backgroundColor: '#fff',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  messageContainer: {
+    marginHorizontal: 20,
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  successContainer: {
+    backgroundColor: '#efe',
+    borderColor: '#cfc',
+  },
+  successText: {
+    color: '#3c3',
+    fontSize: 14,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  errorContainer: {
+    backgroundColor: '#fee',
+    borderColor: '#fcc',
+  },
+  errorText: {
+    color: '#c33',
+    fontSize: 14,
+    textAlign: 'center',
   },
   settingsCard: {
     margin: 20,
@@ -222,7 +346,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
@@ -233,7 +357,6 @@ const styles = StyleSheet.create({
   pickerContainer: {
     width: '60%',
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 4,
   },
   picker: {
@@ -244,14 +367,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingHorizontal: 20,
     paddingVertical: 10,
+    gap: 10,
   },
   saveButton: {
     flex: 1,
-    marginRight: 5,
   },
   resetButton: {
     flex: 1,
-    marginLeft: 5,
   },
   logoutContainer: {
     paddingHorizontal: 20,
@@ -263,7 +385,6 @@ const styles = StyleSheet.create({
   exportContainer: {
     margin: 20,
     padding: 15,
-    backgroundColor: '#fff',
     borderRadius: 8,
   },
   exportTitle: {
@@ -273,7 +394,6 @@ const styles = StyleSheet.create({
   },
   exportDescription: {
     marginBottom: 15,
-    color: '#666',
   },
   exportButton: {
     alignSelf: 'flex-start',
